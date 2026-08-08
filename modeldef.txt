@@ -1,0 +1,12 @@
+// Flashlight model. Model and textures by Ermac, from VR-Flashlight 2.0
+// (original 3D model from Sketchfab, edited by Ermac). Only the assets are
+// used here -- the flashlight code is this mod's own.
+Model GITD_FlashlightModel
+{
+	Path "models/flashlight"
+	Model 0 "flashlight.md3"
+	Skin 0 "flashlight.jpg"
+	Scale 1.0 1.0 1.0
+	AngleOffset 90
+	FrameIndex TNT1 A 0 0
+}

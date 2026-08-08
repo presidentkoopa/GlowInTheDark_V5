@@ -1,0 +1,384 @@
+// === GLOW IN THE DARK ===
+//
+// Four lanes, identical control set on each:
+//   wb = wall bottom, lit from the floor     (wall glow)
+//   wt = wall top, lit from the ceiling      (wall glow)
+//   cg = the ceiling surface itself          (flat-edge glow)
+//   fg = the floor surface itself            (flat-edge glow)
+//
+// Colour slots are palette indices, not raw colours -- see GITD_Palette in
+// zscript/GlowHandler.zs. Slot value -1 means "random", re-rolled each time
+// that slot comes around.
+
+server bool gitd_enabled = true;
+
+// Bloom is what makes glow read as emissive rather than as paint, so GITD
+// switches it on the first time it loads. Once only -- after that your
+// choice sticks, because a mod that keeps overriding a setting you changed
+// is worse than one that never touched it.
+user bool gitd_bloom_forced = false;
+server bool gitd_dd_enabled = true;      // DarkDoomZ master
+
+// Preset 0 = off (player's own colour choices are used).
+// 1-10 override every lane's colours while active.
+server int gitd_preset = 0;
+
+// ---- Floor glow (fg) -----------------------------------------------------
+server bool gitd_fg_enabled = true;
+server int gitd_fg_c1 = 8;
+server int gitd_fg_c2 = 13;
+server int gitd_fg_c3 = 12;
+server int gitd_fg_c4 = 9;
+server int gitd_fg_c5 = -1;
+server int gitd_fg_c6 = -1;
+server int gitd_fg_c7 = -1;
+server int gitd_fg_c8 = -1;
+server int gitd_fg_slots = 4;
+server int gitd_fg_pattern = 1;          // 0 snap, 1 fade, 2 flash, 3 breathe, 4 ping-pong
+server float gitd_fg_speed = 0.004;
+server bool gitd_fg_bleed = true;        // pull colour toward neighbouring lanes
+server int gitd_fg_coverage = 160;
+server int gitd_fg_falloff = 1;
+server float gitd_fg_intensity = 1.0;
+server float gitd_fg_saturation = 1.0;   // 0 = greyscale, 1 = full colour, >1 pushes toward white
+server int gitd_fg_anim = 0;             // 0 off, 1 ripple, 2 roll X, 3 roll Y, 4 roll Z (height)
+server float gitd_fg_anim_speed = 0.6;
+server float gitd_fg_anim_length = 512.0;
+server float gitd_fg_anim_depth = 0.6;
+server float gitd_fg_anim_sharp = 1.0;   // 1 = smooth sine, higher = narrow travelling streak
+server float gitd_fg_anim_phase = 0.0;   // offset so lanes can chase each other
+
+// ---- Ceiling glow (cg) ---------------------------------------------------
+server bool gitd_cg_enabled = true;
+server int gitd_cg_c1 = 12;
+server int gitd_cg_c2 = 8;
+server int gitd_cg_c3 = 13;
+server int gitd_cg_c4 = 11;
+server int gitd_cg_c5 = -1;
+server int gitd_cg_c6 = -1;
+server int gitd_cg_c7 = -1;
+server int gitd_cg_c8 = -1;
+server int gitd_cg_slots = 4;
+server int gitd_cg_pattern = 1;
+server float gitd_cg_speed = 0.004;
+server bool gitd_cg_bleed = true;
+server int gitd_cg_coverage = 160;
+server int gitd_cg_falloff = 1;
+server float gitd_cg_intensity = 1.0;
+server float gitd_cg_saturation = 1.0;
+server int gitd_cg_anim = 0;
+server float gitd_cg_anim_speed = 0.6;
+server float gitd_cg_anim_length = 512.0;
+server float gitd_cg_anim_depth = 0.6;
+server float gitd_cg_anim_sharp = 1.0;
+server float gitd_cg_anim_phase = 0.25;
+
+// ---- Wall bottom (wb) ----------------------------------------------------
+server bool gitd_wb_enabled = true;
+server int gitd_wb_c1 = 13;
+server int gitd_wb_c2 = 8;
+server int gitd_wb_c3 = 12;
+server int gitd_wb_c4 = 14;
+server int gitd_wb_c5 = -1;
+server int gitd_wb_c6 = -1;
+server int gitd_wb_c7 = -1;
+server int gitd_wb_c8 = -1;
+server int gitd_wb_slots = 4;
+server int gitd_wb_pattern = 1;
+server float gitd_wb_speed = 0.004;
+server bool gitd_wb_bleed = true;
+server int gitd_wb_coverage = 176;       // deliberately past halfway on most walls
+server int gitd_wb_falloff = 1;
+server float gitd_wb_intensity = 1.0;
+server float gitd_wb_saturation = 1.0;
+server int gitd_wb_anim = 0;
+server float gitd_wb_anim_speed = 0.6;
+server float gitd_wb_anim_length = 512.0;
+server float gitd_wb_anim_depth = 0.6;
+server float gitd_wb_anim_sharp = 1.0;
+server float gitd_wb_anim_phase = 0.5;
+
+// ---- Wall top (wt) -------------------------------------------------------
+server bool gitd_wt_enabled = true;
+server int gitd_wt_c1 = 12;
+server int gitd_wt_c2 = 11;
+server int gitd_wt_c3 = 8;
+server int gitd_wt_c4 = 13;
+server int gitd_wt_c5 = -1;
+server int gitd_wt_c6 = -1;
+server int gitd_wt_c7 = -1;
+server int gitd_wt_c8 = -1;
+server int gitd_wt_slots = 4;
+server int gitd_wt_pattern = 1;
+server float gitd_wt_speed = 0.004;
+server bool gitd_wt_bleed = true;
+server int gitd_wt_coverage = 176;       // overlaps wb mid-wall on purpose
+server int gitd_wt_falloff = 1;
+server float gitd_wt_intensity = 1.0;
+server float gitd_wt_saturation = 1.0;
+server int gitd_wt_anim = 0;
+server float gitd_wt_anim_speed = 0.6;
+server float gitd_wt_anim_length = 512.0;
+server float gitd_wt_anim_depth = 0.6;
+server float gitd_wt_anim_sharp = 1.0;
+server float gitd_wt_anim_phase = 0.75;
+
+// ---- DarkDoomZ ------------------------------------------------------------
+// Base sector light darkening + flashlight, from DarkDoomZ by Sterling
+// Parker ("Caligari87"), zlib licensed. Separate mechanism from the glow
+// lanes above: this lowers Sector.LightLevel, glow is added on top.
+server int ddz_mode = 2;
+server int ddz_preset = 3;
+server int ddz_pregain = 0;
+server int ddz_postgain = 0;
+server float ddz_skymode = 1.0;
+server int ddz_fl_quality = 1;
+server int ddz_fl_type = 1;
+server int ddz_fl_pos = 0;
+server int ddz_fog = 0;
+server int ddz_minlight = 0;
+server bool ddz_lighting = true;
+
+// ---- Sector Sweep ---------------------------------------------------------
+// A train of up to eight thin bands of light travelling through the world,
+// each wrapping across floor, wall and ceiling as one continuous line. Its
+// own system, not one of the four lanes and not a preset: while it is on it
+// takes over, because the whole point is a clean dark room with nothing in
+// it but the lines.
+//
+// Bands follow each other at a configurable spacing in tics, so band 2
+// starts N tics behind band 1 and so on down the train.
+server bool gitd_ss_enabled = false;
+server int gitd_ss_shape = 2;        // 1 ring, 2 bar east/west, 3 bar north/south, 4 shell
+server int gitd_ss_count = 1;        // how many bands in the train, 1-8
+server int gitd_ss_origin = 0;       // 0 map centre, 1 where you started, 2 follows you
+
+server color gitd_ss_c1 = "00 dc ff";
+server color gitd_ss_c2 = "00 dc ff";
+server color gitd_ss_c3 = "00 dc ff";
+server color gitd_ss_c4 = "00 dc ff";
+server color gitd_ss_c5 = "00 dc ff";
+server color gitd_ss_c6 = "00 dc ff";
+server color gitd_ss_c7 = "00 dc ff";
+server color gitd_ss_c8 = "00 dc ff";
+
+// Tics between one band starting and the next. gap1 is the delay before
+// band 2 follows band 1, and so on.
+server int gitd_ss_gap1 = 20;
+server int gitd_ss_gap2 = 20;
+server int gitd_ss_gap3 = 20;
+server int gitd_ss_gap4 = 20;
+server int gitd_ss_gap5 = 20;
+server int gitd_ss_gap6 = 20;
+server int gitd_ss_gap7 = 20;
+
+// What the sweep does to the room it passes through.
+//   0 nothing
+//   1 brighten each sector as a band crosses it
+//   2 darken each sector as a band crosses it
+//   3 re-colour the four glow lanes to shades of the band's own colour
+server int gitd_ss_light_mode = 0;
+server int gitd_ss_light_amount = 48;   // how much brighter/darker, in light units
+
+server float gitd_ss_intensity = 1.4;
+server int gitd_ss_thickness = 10;
+server float gitd_ss_softness = 2.0;
+server float gitd_ss_speed = 260.0;     // map units per second
+server int gitd_ss_range = 2048;        // how far a band travels before restarting
+server bool gitd_ss_pingpong = true;    // sweep back and forth instead of restarting
+
+// ---- Flashlight -----------------------------------------------------------
+// Volumetric: the beam is visible in the air, not just where it lands. The
+// cone itself is drawn by the engine (Level.SetVolumetricBeam); everything
+// here decides where it points and what colour it is.
+server bool fl_enabled = true;
+server int fl_mount = 0;          // 0 mainhand, 1 offhand, 2 head, 3 chest
+server bool fl_allowflip = true;  // flip the beam when the wrist rolls past upside-down
+server bool fl_bounce = true;     // a soft fill light so the cone is not the only illumination
+server bool fl_agitate = false;   // pointing the light at monsters wakes them
+server bool fl_model = false;     // show the flashlight model -- requires the offhand mount
+
+// Shape.
+server int fl_range = 1024;
+server float fl_intensity = 1.0;
+server float fl_inner = 10.0;     // half-angle, degrees: full brightness inside this
+server float fl_outer = 26.0;     // half-angle, degrees: faded out by here
+server float fl_falloff = 1.5;    // 1 linear along the beam, higher concentrates it near the lens
+server float fl_density = 1.0;    // how much haze the beam lights up
+
+// Colour. Same idea as the glow lanes: up to eight slots, cycled with a
+// transition, or held on one. -1 in a slot means random.
+server int fl_c1 = 17;            // Halogen
+server int fl_c2 = 17;
+server int fl_c3 = 17;
+server int fl_c4 = 17;
+server int fl_c5 = 17;
+server int fl_c6 = 17;
+server int fl_c7 = 17;
+server int fl_c8 = 17;
+server int fl_slots = 1;          // 1 = a single steady colour
+server int fl_pattern = 1;        // 0 snap, 1 fade, 2 flash, 3 breathe, 4 ping-pong
+server float fl_speed = 0.004;
+
+// Dust in the beam. Sampled in world space, so motes stay put in the room
+// as you sweep rather than sliding along with the light.
+server float fl_dust = 0.0;         // 0 = clean beam, 1 = heavily mottled
+server float fl_dust_scale = 0.04;  // higher = finer motes
+server float fl_dust_drift = 0.0;   // how fast it settles
+
+// ---- Preset customisation -------------------------------------------------
+// A preset is a hue range plus swings in saturation and brightness -- see
+// GITD_Presets. These let you alter the one you have selected.
+//
+// The working set is what the menu edits and what the lanes actually read.
+// It is loaded from the selected preset whenever that selection changes:
+// from your saved version if you have one, otherwise from the shipped
+// defaults. Saving copies the working set into that preset's own slots;
+// restoring throws your version away and reloads the shipped one.
+server float gitd_pc_hue = 0;
+server float gitd_pc_spread = 60;
+server float gitd_pc_sat = 0.9;
+server float gitd_pc_satvar = 0.1;
+server float gitd_pc_val = 0.7;
+server float gitd_pc_valvar = 0.3;
+
+// Presets can optionally carry shape as well as colour, which is what makes
+// something like a Tron look savable -- thin bright seams are a coverage and
+// falloff decision, not a colour one.
+server bool gitd_pc_shape = false;
+server int gitd_pc_coverage = 32;
+server int gitd_pc_falloff = 2;
+server float gitd_pc_intensity = 1.6;
+
+
+server bool gitd_p1_custom = false;
+server float gitd_p1_hue = 0;
+server float gitd_p1_spread = 60;
+server float gitd_p1_sat = 0.9;
+server float gitd_p1_satvar = 0.1;
+server float gitd_p1_val = 0.7;
+server float gitd_p1_valvar = 0.3;
+server bool gitd_p1_shape = false;
+server int gitd_p1_coverage = 32;
+server int gitd_p1_falloff = 2;
+server float gitd_p1_intensity = 1.6;
+
+server bool gitd_p2_custom = false;
+server float gitd_p2_hue = 0;
+server float gitd_p2_spread = 60;
+server float gitd_p2_sat = 0.9;
+server float gitd_p2_satvar = 0.1;
+server float gitd_p2_val = 0.7;
+server float gitd_p2_valvar = 0.3;
+server bool gitd_p2_shape = false;
+server int gitd_p2_coverage = 32;
+server int gitd_p2_falloff = 2;
+server float gitd_p2_intensity = 1.6;
+
+server bool gitd_p3_custom = false;
+server float gitd_p3_hue = 0;
+server float gitd_p3_spread = 60;
+server float gitd_p3_sat = 0.9;
+server float gitd_p3_satvar = 0.1;
+server float gitd_p3_val = 0.7;
+server float gitd_p3_valvar = 0.3;
+server bool gitd_p3_shape = false;
+server int gitd_p3_coverage = 32;
+server int gitd_p3_falloff = 2;
+server float gitd_p3_intensity = 1.6;
+
+server bool gitd_p4_custom = false;
+server float gitd_p4_hue = 0;
+server float gitd_p4_spread = 60;
+server float gitd_p4_sat = 0.9;
+server float gitd_p4_satvar = 0.1;
+server float gitd_p4_val = 0.7;
+server float gitd_p4_valvar = 0.3;
+server bool gitd_p4_shape = false;
+server int gitd_p4_coverage = 32;
+server int gitd_p4_falloff = 2;
+server float gitd_p4_intensity = 1.6;
+
+server bool gitd_p5_custom = false;
+server float gitd_p5_hue = 0;
+server float gitd_p5_spread = 60;
+server float gitd_p5_sat = 0.9;
+server float gitd_p5_satvar = 0.1;
+server float gitd_p5_val = 0.7;
+server float gitd_p5_valvar = 0.3;
+server bool gitd_p5_shape = false;
+server int gitd_p5_coverage = 32;
+server int gitd_p5_falloff = 2;
+server float gitd_p5_intensity = 1.6;
+
+server bool gitd_p6_custom = false;
+server float gitd_p6_hue = 0;
+server float gitd_p6_spread = 60;
+server float gitd_p6_sat = 0.9;
+server float gitd_p6_satvar = 0.1;
+server float gitd_p6_val = 0.7;
+server float gitd_p6_valvar = 0.3;
+server bool gitd_p6_shape = false;
+server int gitd_p6_coverage = 32;
+server int gitd_p6_falloff = 2;
+server float gitd_p6_intensity = 1.6;
+
+server bool gitd_p7_custom = false;
+server float gitd_p7_hue = 0;
+server float gitd_p7_spread = 60;
+server float gitd_p7_sat = 0.9;
+server float gitd_p7_satvar = 0.1;
+server float gitd_p7_val = 0.7;
+server float gitd_p7_valvar = 0.3;
+server bool gitd_p7_shape = false;
+server int gitd_p7_coverage = 32;
+server int gitd_p7_falloff = 2;
+server float gitd_p7_intensity = 1.6;
+
+server bool gitd_p8_custom = false;
+server float gitd_p8_hue = 0;
+server float gitd_p8_spread = 60;
+server float gitd_p8_sat = 0.9;
+server float gitd_p8_satvar = 0.1;
+server float gitd_p8_val = 0.7;
+server float gitd_p8_valvar = 0.3;
+server bool gitd_p8_shape = false;
+server int gitd_p8_coverage = 32;
+server int gitd_p8_falloff = 2;
+server float gitd_p8_intensity = 1.6;
+
+server bool gitd_p9_custom = false;
+server float gitd_p9_hue = 0;
+server float gitd_p9_spread = 60;
+server float gitd_p9_sat = 0.9;
+server float gitd_p9_satvar = 0.1;
+server float gitd_p9_val = 0.7;
+server float gitd_p9_valvar = 0.3;
+server bool gitd_p9_shape = false;
+server int gitd_p9_coverage = 32;
+server int gitd_p9_falloff = 2;
+server float gitd_p9_intensity = 1.6;
+
+server bool gitd_p10_custom = false;
+server float gitd_p10_hue = 0;
+server float gitd_p10_spread = 60;
+server float gitd_p10_sat = 0.9;
+server float gitd_p10_satvar = 0.1;
+server float gitd_p10_val = 0.7;
+server float gitd_p10_valvar = 0.3;
+server bool gitd_p10_shape = false;
+server int gitd_p10_coverage = 32;
+server int gitd_p10_falloff = 2;
+server float gitd_p10_intensity = 1.6;
+
+server bool gitd_p11_custom = false;
+server float gitd_p11_hue = 0;
+server float gitd_p11_spread = 60;
+server float gitd_p11_sat = 0.9;
+server float gitd_p11_satvar = 0.1;
+server float gitd_p11_val = 0.7;
+server float gitd_p11_valvar = 0.3;
+server bool gitd_p11_shape = false;
+server int gitd_p11_coverage = 32;
+server int gitd_p11_falloff = 2;
+server float gitd_p11_intensity = 1.6;

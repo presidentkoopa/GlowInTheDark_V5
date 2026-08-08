@@ -1,0 +1,761 @@
+// === GLOW IN THE DARK ===
+// Every lane gets the same options, four times over. The four lane submenus
+// are deliberately identical in shape -- if a control exists for one lane it
+// exists for all of them.
+
+OptionValue "GITDColor"
+{
+	-1, "Random"
+	0,  "Black"
+	1,  "White"
+	2,  "Red"
+	3,  "Orange"
+	4,  "Yellow"
+	5,  "Lime"
+	6,  "Green"
+	7,  "Teal"
+	8,  "Cyan"
+	9,  "Sky"
+	10, "Blue"
+	11, "Indigo"
+	12, "Violet"
+	13, "Magenta"
+	14, "Pink"
+	15, "Rose"
+	16, "Warm White"
+	17, "Halogen"
+	18, "Incandescent"
+	19, "UV Purple"
+	20, "Blood Red"
+	21, "Toxic Green"
+	22, "Ice Blue"
+	23, "Gold"
+	24, "Ember"
+	25, "Deep Navy"
+}
+
+OptionValue "GITDPattern"
+{
+	0, "Snap"
+	1, "Fade"
+	2, "Flash"
+	3, "Breathe"
+	4, "Ping-Pong"
+}
+
+OptionValue "GITDFalloff"
+{
+	0, "Linear"
+	1, "Smooth"
+	2, "Sharp"
+	3, "Exponential"
+}
+
+OptionValue "GITDSlots"
+{
+	1, "1"
+	2, "2"
+	3, "3"
+	4, "4"
+	5, "5"
+	6, "6"
+	7, "7"
+	8, "8"
+}
+
+OptionValue "GITDAnim"
+{
+	0, "Off"
+	1, "Ripple from centre"
+	2, "Travel east/west"
+	3, "Travel north/south"
+	4, "Travel by height"
+}
+
+OptionValue "GITDSweepShape"
+{
+	1, "Ring expanding outward"
+	2, "Bar sweeping east/west"
+	3, "Bar sweeping north/south"
+	4, "Shell expanding outward"
+}
+
+OptionValue "GITDSweepOrigin"
+{
+	0, "Map centre"
+	1, "Where you started"
+	2, "Follows you"
+}
+
+OptionValue "GITDSweepCount"
+{
+	1, "1"
+	2, "2"
+	3, "3"
+	4, "4"
+	5, "5"
+	6, "6"
+	7, "7"
+	8, "8"
+}
+
+OptionValue "GITDSweepLight"
+{
+	0, "Nothing"
+	1, "Brighten as it passes"
+	2, "Darken as it passes"
+	3, "Re-colour glows to match"
+}
+
+OptionValue "GITDFLMount"
+{
+	0, "Main hand"
+	1, "Off hand"
+	2, "Head mounted"
+	3, "Chest mounted"
+}
+
+OptionValue "GITDPreset"
+{
+	0,  "Off (use my colours)"
+	1,  "Blackout"
+	2,  "Low Power"
+	3,  "Red Alert"
+	4,  "Cold War"
+	5,  "Toxic"
+	6,  "Neon Unison"
+	7,  "Neon Chaos"
+	8,  "Ember"
+	9,  "Deep Sea"
+	10, "Monochrome"
+	11, "Black and White"
+}
+
+// DarkDoomZ lists. Renamed for plain language, except the three classic
+// DarkDoom modes which keep their own names.
+OptionValue "GITDDarkMode"
+{
+	0,  "Off"
+	1,  "Subtract"
+	2,  "Compress"
+	3,  "Cap brightest"
+	4,  "Deepen shadows"
+	10, "DarkDoom Lite"
+	11, "DarkDoom Classic"
+	12, "DarkDoom Black"
+}
+
+OptionValue "GITDDarkLevel"
+{
+	0, "Off"
+	1, "Slightly dark"
+	2, "Dark"
+	3, "Very dark"
+	4, "Gloomy"
+	5, "Very gloomy"
+	6, "Near black"
+	7, "Almost pitch"
+	8, "Pitch black"
+}
+
+OptionValue "Nice_Flashlight_Quality"
+{
+	0, "Simple"
+	1, "Fancy"
+}
+
+OptionValue "Nice_Flashlight_Type"
+{
+	0, "Incandescent"
+	1, "Halogen"
+	2, "LED"
+	3, "Red Filter"
+}
+
+OptionValue "Nice_Flashlight_Position"
+{
+	0, "Handheld"
+	1, "Left Shoulder"
+	2, "Right Shoulder"
+	3, "Helmet"
+}
+
+// ---------------------------------------------------------------------------
+// Root
+//
+// Every menu uses DarkDoomZ_OptionMenu, which stops the menu dimming and
+// blurring the view behind it -- so you can see the lighting you are
+// adjusting while you adjust it.
+// ---------------------------------------------------------------------------
+
+OptionMenu "GITDOptions"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Glow In The Dark"
+	StaticText ""
+	StaticText ""
+	Option "Glow",					"gitd_enabled", "OnOff"
+	Option "Darkness",				"gitd_dd_enabled", "OnOff"
+	StaticText ""
+	Submenu "Flashlight Options",	"GITDFlashlight"
+	StaticText ""
+	Option "Darkness mode",			"ddz_mode", "GITDDarkMode"
+	Option "How dark",				"ddz_preset", "GITDDarkLevel"
+	StaticText "Classic DarkDoom modes ignore", darkgray
+	StaticText "the darkness level above", darkgray
+	StaticText ""
+	StaticText "Presets", gold
+	StaticText ""
+	Option "Preset",				"gitd_preset", "GITDPreset"
+	StaticText "A preset overrides every lane's colours.", darkgray
+	StaticText "Turning it off restores your own.", darkgray
+	Submenu "Preset Options",		"GITDPresetOptions"
+	StaticText ""
+	StaticText ""
+	SafeCommand "Reset glow to defaults",	"netevent gitd_reset"
+	StaticText ""
+	StaticText "Lane control", gold
+	Submenu "Wall Bottom Glow",		"GITDWallBottom"
+	Submenu "Wall Top Glow",		"GITDWallTop"
+	Submenu "Ceiling Glow",			"GITDCeilingGlow"
+	Submenu "Floor Glow",			"GITDFloorGlow"
+	StaticText ""
+	Option "Sector Sweep",			"gitd_ss_enabled", "OnOff"
+	StaticText "Overrides presets and lane settings", darkgray
+	Submenu "Sector Sweep Options","GITDSweep"
+	StaticText ""
+	Submenu "Bloom Options",		"GITDBloom"
+	Submenu "Darkness Options",		"DarkDoomZ_Settings"
+}
+
+// ---------------------------------------------------------------------------
+// Bloom. Engine cvars reached by name -- no mirrors in this mod's cvarinfo,
+// same rule as everywhere else here.
+//
+// Bloom is what makes glow read as EMISSIVE rather than as paint: a bright
+// enough surface bleeds light past its own edges. It is off by default in
+// this engine, and the threshold used to be hardcoded at 1.0, meaning only
+// pixels already blown past white could bloom at all. The threshold slider
+// is the one that matters for glow.
+// ---------------------------------------------------------------------------
+
+OptionMenu "GITDBloom"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Bloom Options"
+	StaticText ""
+	StaticText "Makes bright surfaces bleed light past", darkgray
+	StaticText "their edges -- what sells glow as emissive", darkgray
+	StaticText ""
+	Option "Bloom",					"gl_bloom", "OnOff"
+	StaticText ""
+	Slider "Threshold",				"gl_bloom_threshold", 0.05, 4.0, 0.05, 2
+	StaticText "How bright something must be before it", darkgray
+	StaticText "blooms. Lower = glow blooms at sane", darkgray
+	StaticText "intensities instead of needing to be", darkgray
+	StaticText "cranked past white first.", darkgray
+	StaticText ""
+	Slider "Softness",				"gl_bloom_knee", 0.0, 8.0, 0.1, 1
+	StaticText "How gradually things start blooming as", darkgray
+	StaticText "they brighten. 0 snaps on at the threshold,", darkgray
+	StaticText "which pops when glow pulses or a beam", darkgray
+	StaticText "sweeps past.", darkgray
+	StaticText ""
+	Slider "Amount",				"gl_bloom_amount", 0.1, 4.0, 0.1, 1
+	StaticText "How far the light spreads", darkgray
+	StaticText ""
+	StaticText "Anamorphic", gold
+	Option "Streak sideways",		"gl_bloom_anamorphic", "OnOff"
+	Slider "  Stretch",				"gl_bloom_anamorphic_ratio", 1.0, 16.0, 0.5, 1
+	StaticText "Blurs wider horizontally than vertically,", darkgray
+	StaticText "so bright edges streak sideways like an", darkgray
+	StaticText "anamorphic lens", darkgray
+	StaticText ""
+	StaticText "Colour", gold
+	Slider "Tint red",				"gl_bloom_tint_r", 0.0, 2.0, 0.05, 2
+	Slider "Tint green",			"gl_bloom_tint_g", 0.0, 2.0, 0.05, 2
+	Slider "Tint blue",				"gl_bloom_tint_b", 0.0, 2.0, 0.05, 2
+	StaticText "Colours the bloom regardless of what made", darkgray
+	StaticText "it. All three at 1.00 leaves it alone.", darkgray
+	StaticText ""
+	Slider "Colour fringing",		"gl_bloom_chromatic", 0.0, 0.1, 0.002, 3
+	StaticText "Splits the bloom's colour channels outward", darkgray
+	StaticText "from screen centre, the way a real lens", darkgray
+	StaticText "does. Nil in the middle, strongest at the", darkgray
+	StaticText "edges.", darkgray
+	StaticText ""
+	StaticText "Exposure", gold
+	StaticText "Bloom is measured after exposure, so these", darkgray
+	StaticText "change what counts as bright", darkgray
+	Slider "Scale",					"gl_exposure_scale", 0.1, 4.0, 0.05, 2
+	Slider "Minimum",				"gl_exposure_min", 0.0, 2.0, 0.05, 2
+	Slider "Base",					"gl_exposure_base", 0.0, 2.0, 0.05, 2
+	Slider "Adaptation speed",		"gl_exposure_speed", 0.01, 1.0, 0.01, 2
+	StaticText "Adaptation speed is how fast your eyes", darkgray
+	StaticText "adjust walking from dark to light", darkgray
+}
+
+// ---------------------------------------------------------------------------
+// Flashlight. The beam is volumetric -- visible in the air, not just where it
+// lands. The cone is drawn by the engine; everything here decides where it
+// points and what colour it is.
+// ---------------------------------------------------------------------------
+
+OptionMenu "GITDFlashlight"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Flashlight"
+	StaticText ""
+	Option "Enabled",				"fl_enabled", "OnOff"
+	Option "Mounted on",			"fl_mount", "GITDFLMount"
+	StaticText "Hand mounts follow that hand's own tracking", darkgray
+	StaticText ""
+	StaticText "Shape", gold
+	Slider "Range",					"fl_range", 128, 4096, 64, 0
+	Slider "Brightness",			"fl_intensity", 0.0, 3.0, 0.1, 1
+	Slider "Inner angle",			"fl_inner", 1, 60, 1, 0
+	Slider "Outer angle",			"fl_outer", 2, 90, 1, 0
+	StaticText "Full brightness inside the inner angle,", darkgray
+	StaticText "faded to nothing by the outer", darkgray
+	Slider "Falloff",				"fl_falloff", 0.5, 4.0, 0.1, 1
+	StaticText "Higher concentrates the light near the lens", darkgray
+	Slider "Haze",					"fl_density", 0.0, 3.0, 0.1, 1
+	StaticText "How much of the beam you see in the air", darkgray
+	StaticText ""
+	StaticText "Dust", gold
+	Slider "Amount",				"fl_dust", 0.0, 1.0, 0.05, 2
+	Slider "Fineness",				"fl_dust_scale", 0.005, 0.2, 0.005, 3
+	Slider "Drift",					"fl_dust_drift", 0.0, 60.0, 1.0, 0
+	StaticText "Dust hangs in the room, so sweeping the", darkgray
+	StaticText "beam reveals different motes. Fine dust", darkgray
+	StaticText "needs higher beam quality to resolve.", darkgray
+	StaticText ""
+	StaticText "Colour", gold
+	Option "Colours in rotation",	"fl_slots", "GITDSlots"
+	Option "Colour 1",				"fl_c1", "GITDColor"
+	Option "Colour 2",				"fl_c2", "GITDColor"
+	Option "Colour 3",				"fl_c3", "GITDColor"
+	Option "Colour 4",				"fl_c4", "GITDColor"
+	Option "Colour 5",				"fl_c5", "GITDColor"
+	Option "Colour 6",				"fl_c6", "GITDColor"
+	Option "Colour 7",				"fl_c7", "GITDColor"
+	Option "Colour 8",				"fl_c8", "GITDColor"
+	Option "Transition",			"fl_pattern", "GITDPattern"
+	Slider "Transition speed",		"fl_speed", 0.001, 0.05, 0.001, 3
+	StaticText "One colour in rotation = steady, no cycling", darkgray
+	StaticText ""
+	StaticText "Behaviour", gold
+	Option "Bounce light",			"fl_bounce", "OnOff"
+	StaticText "A soft fill so the beam is not the only light", darkgray
+	Option "Flip when wrist rolls over","fl_allowflip", "YesNo"
+	Option "Light agitates monsters","fl_agitate", "OnOff"
+	Option "Show flashlight model",	"fl_model", "YesNo"
+	StaticText "Model needs the off hand mount -- with any", darkgray
+	StaticText "other, no hand is holding it", darkgray
+	StaticText ""
+	Slider "Beam quality",			"vol_beam_quality", 8, 64, 4, 0
+	StaticText "Samples along the beam. Lower is cheaper and", darkgray
+	StaticText "grainier, not dimmer.", darkgray
+}
+
+// ---------------------------------------------------------------------------
+// Preset Options -- alter the preset you have selected.
+//
+// A preset is a hue range plus swings in saturation and brightness. Each lane
+// takes a different quarter of that range and walks eight shades through it,
+// so moving one slider here moves all 32 colours together and they stay
+// related rather than drifting apart.
+//
+// Edits apply immediately but are not kept: switching preset reloads it.
+// Save to keep them over that preset, restore to throw them away.
+// ---------------------------------------------------------------------------
+
+OptionMenu "GITDPresetOptions"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Preset Options"
+	StaticText ""
+	StaticText "Alters the preset selected above", darkgray
+	StaticText ""
+	StaticText "Colour", gold
+	Slider "Base hue",				"gitd_pc_hue", 0, 360, 5, 0
+	Slider "Hue range",				"gitd_pc_spread", 0, 360, 5, 0
+	StaticText "How far the 32 colours spread around", darkgray
+	StaticText "the wheel. Small = one family, large =", darkgray
+	StaticText "a rainbow.", darkgray
+	StaticText ""
+	Slider "Saturation",			"gitd_pc_sat", 0.0, 1.0, 0.05, 2
+	Slider "  Variation",			"gitd_pc_satvar", 0.0, 0.5, 0.05, 2
+	Slider "Brightness",			"gitd_pc_val", 0.0, 1.0, 0.05, 2
+	Slider "  Variation",			"gitd_pc_valvar", 0.0, 0.5, 0.05, 2
+	StaticText "Variation is how much each swings across", darkgray
+	StaticText "the eight slots -- 0 is flat and lifeless", darkgray
+	StaticText ""
+	StaticText "Shape", gold
+	Option "Preset also sets shape",	"gitd_pc_shape", "YesNo"
+	StaticText "On, this preset overrides every lane's", darkgray
+	StaticText "coverage, falloff and intensity -- which is", darkgray
+	StaticText "what makes a look like Tron savable, not", darkgray
+	StaticText "just its colours", darkgray
+	Slider "Coverage",				"gitd_pc_coverage", 1, 2048, 16, 0
+	Option "Falloff",				"gitd_pc_falloff", "GITDFalloff"
+	Slider "Intensity",				"gitd_pc_intensity", 0.0, 3.0, 0.1, 1
+	StaticText "Low coverage + sharp falloff + high", darkgray
+	StaticText "intensity = thin bright seams", darkgray
+	StaticText ""
+	StaticText ""
+	SafeCommand "Save over this preset",	"netevent gitd_preset_save"
+	SafeCommand "Restore preset defaults",	"netevent gitd_preset_restore"
+}
+
+// ---------------------------------------------------------------------------
+// Sector Sweep: a train of thin bands travelling through the world, each
+// wrapping across floor, wall and ceiling as one unbroken line. Its own
+// system rather than a fifth lane -- a lane is per-sector, and no per-sector
+// effect can hold a thin line across a seam.
+// ---------------------------------------------------------------------------
+
+OptionMenu "GITDSweep"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Sector Sweep Options"
+	StaticText ""
+	StaticText "Lines of light travelling through the map,", darkgray
+	StaticText "wrapping across floor, walls and ceiling", darkgray
+	StaticText ""
+	Option "Shape",					"gitd_ss_shape", "GITDSweepShape"
+	Option "Starts from",			"gitd_ss_origin", "GITDSweepOrigin"
+	Option "Number of sweeps",		"gitd_ss_count", "GITDSweepCount"
+	StaticText ""
+	ColorPicker "Sweep 1 colour",	"gitd_ss_c1"
+	ColorPicker "Sweep 2 colour",	"gitd_ss_c2"
+	ColorPicker "Sweep 3 colour",	"gitd_ss_c3"
+	ColorPicker "Sweep 4 colour",	"gitd_ss_c4"
+	ColorPicker "Sweep 5 colour",	"gitd_ss_c5"
+	ColorPicker "Sweep 6 colour",	"gitd_ss_c6"
+	ColorPicker "Sweep 7 colour",	"gitd_ss_c7"
+	ColorPicker "Sweep 8 colour",	"gitd_ss_c8"
+	StaticText ""
+	StaticText "Sector light level", gold
+	Option "As a sweep passes",		"gitd_ss_light_mode", "GITDSweepLight"
+	Slider "  Amount",				"gitd_ss_light_amount", 0, 128, 4, 0
+	StaticText "Re-colour drives all four lanes to shades", darkgray
+	StaticText "of the passing sweep's own colour", darkgray
+	StaticText ""
+	Submenu "Advanced",				"GITDSweepAdv"
+}
+
+OptionMenu "GITDSweepAdv"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Sector Sweep -- Advanced"
+	StaticText ""
+	StaticText "Spacing", gold
+	StaticText "Tics before each sweep follows the one", darkgray
+	StaticText "before it", darkgray
+	Slider "Time to sweep 2",		"gitd_ss_gap1", 1, 210, 1, 0
+	Slider "Time to sweep 3",		"gitd_ss_gap2", 1, 210, 1, 0
+	Slider "Time to sweep 4",		"gitd_ss_gap3", 1, 210, 1, 0
+	Slider "Time to sweep 5",		"gitd_ss_gap4", 1, 210, 1, 0
+	Slider "Time to sweep 6",		"gitd_ss_gap5", 1, 210, 1, 0
+	Slider "Time to sweep 7",		"gitd_ss_gap6", 1, 210, 1, 0
+	Slider "Time to sweep 8",		"gitd_ss_gap7", 1, 210, 1, 0
+	StaticText ""
+	StaticText "Shape and motion", gold
+	Slider "Brightness",			"gitd_ss_intensity", 0.0, 3.0, 0.1, 1
+	Slider "Thickness",				"gitd_ss_thickness", 1, 128, 1, 0
+	Slider "Edge hardness",			"gitd_ss_softness", 0.5, 8.0, 0.25, 2
+	StaticText "Higher = a tighter, harder line", darkgray
+	Slider "Speed",					"gitd_ss_speed", 20, 2000, 20, 0
+	Slider "Travel distance",		"gitd_ss_range", 128, 8192, 128, 0
+	Option "Sweep back and forth",	"gitd_ss_pingpong", "YesNo"
+	StaticText "Off = restarts from the origin each time,", darkgray
+	StaticText "so it reads as a pulse rather than a sweep", darkgray
+}
+
+// ---------------------------------------------------------------------------
+// Lane menus -- identical in shape, four times over.
+// ---------------------------------------------------------------------------
+
+OptionMenu "GITDWallBottom"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Wall Bottom Glow"
+	StaticText ""
+	StaticText "The wall, lit upward from the floor", darkgray
+	StaticText ""
+	Option "Enabled",				"gitd_wb_enabled", "OnOff"
+	StaticText ""
+	Option "Colours in rotation",	"gitd_wb_slots", "GITDSlots"
+	Option "Colour 1",				"gitd_wb_c1", "GITDColor"
+	Option "Colour 2",				"gitd_wb_c2", "GITDColor"
+	Option "Colour 3",				"gitd_wb_c3", "GITDColor"
+	Option "Colour 4",				"gitd_wb_c4", "GITDColor"
+	Option "Colour 5",				"gitd_wb_c5", "GITDColor"
+	Option "Colour 6",				"gitd_wb_c6", "GITDColor"
+	Option "Colour 7",				"gitd_wb_c7", "GITDColor"
+	Option "Colour 8",				"gitd_wb_c8", "GITDColor"
+	StaticText ""
+	StaticText ""
+	Option "Can bleed into other lanes","gitd_wb_bleed", "YesNo"
+	Option "Transition",			"gitd_wb_pattern", "GITDPattern"
+	Slider "Transition speed",		"gitd_wb_speed", 0.001, 0.05, 0.001, 3
+	StaticText ""
+	StaticText "Animation", gold
+	Option "Travels",				"gitd_wb_anim", "GITDAnim"
+	Slider "  Speed",				"gitd_wb_anim_speed", 0.05, 4.0, 0.05, 2
+	Slider "  Distance between pulses","gitd_wb_anim_length", 64, 4096, 64, 0
+	Slider "  Depth",				"gitd_wb_anim_depth", 0.0, 1.0, 0.05, 2
+	Slider "  Sharpness",			"gitd_wb_anim_sharp", 1.0, 16.0, 0.5, 1
+	StaticText "Depth 1 + high sharpness = a bright", darkgray
+	StaticText "streak travelling through a dark lane", darkgray
+	StaticText ""
+	StaticText "Shape", gold
+	Slider "Coverage",				"gitd_wb_coverage", 1, 2048, 16, 0
+	StaticText "Past halfway, wall lanes overlap and mix", darkgray
+	Slider "Saturation",			"gitd_wb_saturation", 0.0, 2.0, 0.05, 2
+	StaticText "0 = greyscale, 2 = pushed toward white", darkgray
+	Option "Falloff",				"gitd_wb_falloff", "GITDFalloff"
+	Slider "Intensity",				"gitd_wb_intensity", 0.0, 2.0, 0.05, 2
+	StaticText ""
+	Submenu "Advanced",				"GITDWallBottomAdv"
+}
+
+OptionMenu "GITDWallBottomAdv"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Wall Bottom -- Advanced"
+	StaticText ""
+	Slider "Animation phase offset",	"gitd_wb_anim_phase", 0.0, 1.0, 0.05, 2
+	StaticText "Shifts this lane's animation in time so", darkgray
+	StaticText "lanes chase each other instead of pulsing", darkgray
+	StaticText "together. 0.5 puts it exactly opposite.", darkgray
+}
+
+OptionMenu "GITDWallTop"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Wall Top Glow"
+	StaticText ""
+	StaticText "The wall, lit downward from the ceiling", darkgray
+	StaticText ""
+	Option "Enabled",				"gitd_wt_enabled", "OnOff"
+	StaticText ""
+	Option "Colours in rotation",	"gitd_wt_slots", "GITDSlots"
+	Option "Colour 1",				"gitd_wt_c1", "GITDColor"
+	Option "Colour 2",				"gitd_wt_c2", "GITDColor"
+	Option "Colour 3",				"gitd_wt_c3", "GITDColor"
+	Option "Colour 4",				"gitd_wt_c4", "GITDColor"
+	Option "Colour 5",				"gitd_wt_c5", "GITDColor"
+	Option "Colour 6",				"gitd_wt_c6", "GITDColor"
+	Option "Colour 7",				"gitd_wt_c7", "GITDColor"
+	Option "Colour 8",				"gitd_wt_c8", "GITDColor"
+	StaticText ""
+	StaticText ""
+	Option "Can bleed into other lanes","gitd_wt_bleed", "YesNo"
+	Option "Transition",			"gitd_wt_pattern", "GITDPattern"
+	Slider "Transition speed",		"gitd_wt_speed", 0.001, 0.05, 0.001, 3
+	StaticText ""
+	StaticText "Animation", gold
+	Option "Travels",				"gitd_wt_anim", "GITDAnim"
+	Slider "  Speed",				"gitd_wt_anim_speed", 0.05, 4.0, 0.05, 2
+	Slider "  Distance between pulses","gitd_wt_anim_length", 64, 4096, 64, 0
+	Slider "  Depth",				"gitd_wt_anim_depth", 0.0, 1.0, 0.05, 2
+	Slider "  Sharpness",			"gitd_wt_anim_sharp", 1.0, 16.0, 0.5, 1
+	StaticText "Depth 1 + high sharpness = a bright", darkgray
+	StaticText "streak travelling through a dark lane", darkgray
+	StaticText ""
+	StaticText "Shape", gold
+	Slider "Coverage",				"gitd_wt_coverage", 1, 2048, 16, 0
+	StaticText "Past halfway, wall lanes overlap and mix", darkgray
+	Slider "Saturation",			"gitd_wt_saturation", 0.0, 2.0, 0.05, 2
+	StaticText "0 = greyscale, 2 = pushed toward white", darkgray
+	Option "Falloff",				"gitd_wt_falloff", "GITDFalloff"
+	Slider "Intensity",				"gitd_wt_intensity", 0.0, 2.0, 0.05, 2
+	StaticText ""
+	Submenu "Advanced",				"GITDWallTopAdv"
+}
+
+OptionMenu "GITDWallTopAdv"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Wall Top -- Advanced"
+	StaticText ""
+	Slider "Animation phase offset",	"gitd_wt_anim_phase", 0.0, 1.0, 0.05, 2
+	StaticText "Shifts this lane's animation in time so", darkgray
+	StaticText "lanes chase each other instead of pulsing", darkgray
+	StaticText "together. 0.5 puts it exactly opposite.", darkgray
+}
+
+OptionMenu "GITDCeilingGlow"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Ceiling Glow"
+	StaticText ""
+	StaticText "The ceiling surface itself", darkgray
+	StaticText ""
+	Option "Enabled",				"gitd_cg_enabled", "OnOff"
+	StaticText ""
+	Option "Colours in rotation",	"gitd_cg_slots", "GITDSlots"
+	Option "Colour 1",				"gitd_cg_c1", "GITDColor"
+	Option "Colour 2",				"gitd_cg_c2", "GITDColor"
+	Option "Colour 3",				"gitd_cg_c3", "GITDColor"
+	Option "Colour 4",				"gitd_cg_c4", "GITDColor"
+	Option "Colour 5",				"gitd_cg_c5", "GITDColor"
+	Option "Colour 6",				"gitd_cg_c6", "GITDColor"
+	Option "Colour 7",				"gitd_cg_c7", "GITDColor"
+	Option "Colour 8",				"gitd_cg_c8", "GITDColor"
+	StaticText ""
+	StaticText ""
+	Option "Can bleed into other lanes","gitd_cg_bleed", "YesNo"
+	Option "Transition",			"gitd_cg_pattern", "GITDPattern"
+	Slider "Transition speed",		"gitd_cg_speed", 0.001, 0.05, 0.001, 3
+	StaticText ""
+	StaticText "Animation", gold
+	Option "Travels",				"gitd_cg_anim", "GITDAnim"
+	Slider "  Speed",				"gitd_cg_anim_speed", 0.05, 4.0, 0.05, 2
+	Slider "  Distance between pulses","gitd_cg_anim_length", 64, 4096, 64, 0
+	Slider "  Depth",				"gitd_cg_anim_depth", 0.0, 1.0, 0.05, 2
+	Slider "  Sharpness",			"gitd_cg_anim_sharp", 1.0, 16.0, 0.5, 1
+	StaticText "Depth 1 + high sharpness = a bright", darkgray
+	StaticText "streak travelling through a dark lane", darkgray
+	StaticText ""
+	StaticText "Shape", gold
+	Slider "Coverage",				"gitd_cg_coverage", 1, 2048, 16, 0
+	StaticText "How far in from the edges it reaches", darkgray
+	Slider "Saturation",			"gitd_cg_saturation", 0.0, 2.0, 0.05, 2
+	StaticText "0 = greyscale, 2 = pushed toward white", darkgray
+	Option "Falloff",				"gitd_cg_falloff", "GITDFalloff"
+	Slider "Intensity",				"gitd_cg_intensity", 0.0, 2.0, 0.05, 2
+	StaticText ""
+	Submenu "Advanced",				"GITDCeilingAdv"
+}
+
+OptionMenu "GITDCeilingAdv"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Ceiling -- Advanced"
+	StaticText ""
+	Slider "Animation phase offset",	"gitd_cg_anim_phase", 0.0, 1.0, 0.05, 2
+	StaticText "Shifts this lane's animation in time so", darkgray
+	StaticText "lanes chase each other instead of pulsing", darkgray
+	StaticText "together. 0.5 puts it exactly opposite.", darkgray
+}
+
+OptionMenu "GITDFloorGlow"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Floor Glow"
+	StaticText ""
+	StaticText "The floor surface itself", darkgray
+	StaticText ""
+	Option "Enabled",				"gitd_fg_enabled", "OnOff"
+	StaticText ""
+	Option "Colours in rotation",	"gitd_fg_slots", "GITDSlots"
+	Option "Colour 1",				"gitd_fg_c1", "GITDColor"
+	Option "Colour 2",				"gitd_fg_c2", "GITDColor"
+	Option "Colour 3",				"gitd_fg_c3", "GITDColor"
+	Option "Colour 4",				"gitd_fg_c4", "GITDColor"
+	Option "Colour 5",				"gitd_fg_c5", "GITDColor"
+	Option "Colour 6",				"gitd_fg_c6", "GITDColor"
+	Option "Colour 7",				"gitd_fg_c7", "GITDColor"
+	Option "Colour 8",				"gitd_fg_c8", "GITDColor"
+	StaticText ""
+	StaticText ""
+	Option "Can bleed into other lanes","gitd_fg_bleed", "YesNo"
+	Option "Transition",			"gitd_fg_pattern", "GITDPattern"
+	Slider "Transition speed",		"gitd_fg_speed", 0.001, 0.05, 0.001, 3
+	StaticText ""
+	StaticText "Animation", gold
+	Option "Travels",				"gitd_fg_anim", "GITDAnim"
+	Slider "  Speed",				"gitd_fg_anim_speed", 0.05, 4.0, 0.05, 2
+	Slider "  Distance between pulses","gitd_fg_anim_length", 64, 4096, 64, 0
+	Slider "  Depth",				"gitd_fg_anim_depth", 0.0, 1.0, 0.05, 2
+	Slider "  Sharpness",			"gitd_fg_anim_sharp", 1.0, 16.0, 0.5, 1
+	StaticText "Depth 1 + high sharpness = a bright", darkgray
+	StaticText "streak travelling through a dark lane", darkgray
+	StaticText ""
+	StaticText "Shape", gold
+	Slider "Coverage",				"gitd_fg_coverage", 1, 2048, 16, 0
+	StaticText "How far in from the edges it reaches", darkgray
+	Slider "Saturation",			"gitd_fg_saturation", 0.0, 2.0, 0.05, 2
+	StaticText "0 = greyscale, 2 = pushed toward white", darkgray
+	Option "Falloff",				"gitd_fg_falloff", "GITDFalloff"
+	Slider "Intensity",				"gitd_fg_intensity", 0.0, 2.0, 0.05, 2
+	StaticText ""
+	Submenu "Advanced",				"GITDFloorAdv"
+}
+
+OptionMenu "GITDFloorAdv"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Floor -- Advanced"
+	StaticText ""
+	Slider "Animation phase offset",	"gitd_fg_anim_phase", 0.0, 1.0, 0.05, 2
+	StaticText "Shifts this lane's animation in time so", darkgray
+	StaticText "lanes chase each other instead of pulsing", darkgray
+	StaticText "together. 0.5 puts it exactly opposite.", darkgray
+}
+
+// ---------------------------------------------------------------------------
+// DarkDoomZ: darkens the room's base light. Separate from the glow lanes --
+// glow is added on top, so floor and ceiling glow stay visible even in a
+// room this has crushed to near black.
+// ---------------------------------------------------------------------------
+
+OptionMenu "DarkDoomZ_Settings"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Darkness & Flashlight"
+	StaticText " "
+	Submenu "Advanced Settings",	"DarkDoomZ_Advanced_Settings"
+	Submenu "Fog Settings",			"DarkDoomZ_Fog_Settings"
+	Submenu "Flashlight Settings",	"DarkDoomZ_Flashlight_Settings"
+}
+
+OptionMenu "DarkDoomZ_Advanced_Settings"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Advanced Settings"
+	StaticText " "
+	Slider "Pre-Gain",				"ddz_pregain", -255, 255, 1, 0
+	Slider "Post-Gain",				"ddz_postgain", -255, 255, 1, 0
+	StaticText "Adjust initial and final light levels.", darkgray
+	StaticText " "
+	Slider "Min. Lightlevel",		"ddz_minlight", 0, 16, 1, 0
+	StaticText "Clamps darkest lightlevel to this minimum.", darkgray
+	StaticText " "
+	Slider "Sky Sectors",			"ddz_skymode", 0.0, 1.0, 0.1, 1
+	StaticText "Whether adjustment applies to sky", darkgray
+	StaticText "sectors. Some skyboxes may still", darkgray
+	StaticText "be affected.", darkgray
+	StaticText " "
+	Option "Sector Effects",		"ddz_lighting", "OnOff"
+	StaticText "Sector light effects such as flickering", darkgray
+	StaticText "or pulsing. Requires reloading the map.", darkgray
+}
+
+OptionMenu "DarkDoomZ_Fog_Settings"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Fog Settings"
+	StaticText " "
+	Option "$GLPREFMNU_FOGMODE",	gl_fogmode, "FogMode"
+	Slider "Fog Density",			"ddz_fog", 0, 512, 8, 0
+}
+
+OptionMenu "DarkDoomZ_Flashlight_Settings"
+{
+	Class "DarkDoomZ_OptionMenu"
+	Title "Flashlight Settings"
+	StaticText " "
+	Option "Quality",				"ddz_fl_quality", "Nice_Flashlight_Quality"
+	Option "Type",					"ddz_fl_type", "Nice_Flashlight_Type"
+	Option "Position",				"ddz_fl_pos", "Nice_Flashlight_Position"
+	Control "Toggle Key",			"ddz_toggleflashlight"
+}
+
+AddOptionMenu "OptionsMenu"
+{
+	Submenu "Glow In The Dark", "GITDOptions"
+}

@@ -1,0 +1,9 @@
+GameInfo
+{
+	// Order matters. DarkDoomZ rewrites every sector's light level from its
+	// own saved originals each tick, so it has to run FIRST -- otherwise it
+	// would wipe the per-sector light changes Sector Sweep makes on top.
+	// GITD_PresetCustomiser runs BEFORE GITD_Handler: it loads the selected
+	// preset into the working set, which the lanes then read that same tick.
+	AddEventHandlers = "DarkDoomZ_Handler", "GITD_PresetCustomiser", "GITD_Handler", "GITD_FlashlightHandler"
+}
