@@ -48,7 +48,7 @@ class GITD_Flashlight : Thinker
 
 		int count = clamp(CVar.FindCVar("fl_slots").GetInt(), 1, 8);
 		int which = (n % count) + 1;
-		return CVar.FindCVar("fl_c" .. which).GetInt();
+		return Color(CVar.FindCVar("fl_c" .. which).GetInt());
 	}
 
 	// One steady colour is the common case, so skip the whole transition
