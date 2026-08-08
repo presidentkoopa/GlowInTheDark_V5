@@ -25,15 +25,16 @@ server int gitd_preset = 0;
 
 // ---- Floor glow (fg) -----------------------------------------------------
 server bool gitd_fg_enabled = true;
-server int gitd_fg_c1 = 8;
-server int gitd_fg_c2 = 13;
-server int gitd_fg_c3 = 12;
-server int gitd_fg_c4 = 9;
-server int gitd_fg_c5 = -1;
-server int gitd_fg_c6 = -1;
-server int gitd_fg_c7 = -1;
-server int gitd_fg_c8 = -1;
+server color gitd_fg_c1 = "00 dc ff";
+server color gitd_fg_c2 = "ff 00 c8";
+server color gitd_fg_c3 = "8c 00 ff";
+server color gitd_fg_c4 = "28 8c ff";
+server color gitd_fg_c5 = "00 dc ff";
+server color gitd_fg_c6 = "ff 00 c8";
+server color gitd_fg_c7 = "8c 00 ff";
+server color gitd_fg_c8 = "28 8c ff";
 server int gitd_fg_slots = 4;
+server bool gitd_fg_random = false;   // ignore the slots, pick fresh colours each cycle
 server int gitd_fg_pattern = 1;          // 0 snap, 1 fade, 2 flash, 3 breathe, 4 ping-pong
 server float gitd_fg_speed = 0.004;
 server bool gitd_fg_bleed = true;        // pull colour toward neighbouring lanes
@@ -50,15 +51,16 @@ server float gitd_fg_anim_phase = 0.0;   // offset so lanes can chase each other
 
 // ---- Ceiling glow (cg) ---------------------------------------------------
 server bool gitd_cg_enabled = true;
-server int gitd_cg_c1 = 12;
-server int gitd_cg_c2 = 8;
-server int gitd_cg_c3 = 13;
-server int gitd_cg_c4 = 11;
-server int gitd_cg_c5 = -1;
-server int gitd_cg_c6 = -1;
-server int gitd_cg_c7 = -1;
-server int gitd_cg_c8 = -1;
+server color gitd_cg_c1 = "8c 00 ff";
+server color gitd_cg_c2 = "00 dc ff";
+server color gitd_cg_c3 = "ff 00 c8";
+server color gitd_cg_c4 = "3c 00 c8";
+server color gitd_cg_c5 = "8c 00 ff";
+server color gitd_cg_c6 = "00 dc ff";
+server color gitd_cg_c7 = "ff 00 c8";
+server color gitd_cg_c8 = "3c 00 c8";
 server int gitd_cg_slots = 4;
+server bool gitd_cg_random = false;   // ignore the slots, pick fresh colours each cycle
 server int gitd_cg_pattern = 1;
 server float gitd_cg_speed = 0.004;
 server bool gitd_cg_bleed = true;
@@ -75,15 +77,16 @@ server float gitd_cg_anim_phase = 0.25;
 
 // ---- Wall bottom (wb) ----------------------------------------------------
 server bool gitd_wb_enabled = true;
-server int gitd_wb_c1 = 13;
-server int gitd_wb_c2 = 8;
-server int gitd_wb_c3 = 12;
-server int gitd_wb_c4 = 14;
-server int gitd_wb_c5 = -1;
-server int gitd_wb_c6 = -1;
-server int gitd_wb_c7 = -1;
-server int gitd_wb_c8 = -1;
+server color gitd_wb_c1 = "ff 00 c8";
+server color gitd_wb_c2 = "00 dc ff";
+server color gitd_wb_c3 = "8c 00 ff";
+server color gitd_wb_c4 = "ff 50 a0";
+server color gitd_wb_c5 = "ff 00 c8";
+server color gitd_wb_c6 = "00 dc ff";
+server color gitd_wb_c7 = "8c 00 ff";
+server color gitd_wb_c8 = "ff 50 a0";
 server int gitd_wb_slots = 4;
+server bool gitd_wb_random = false;   // ignore the slots, pick fresh colours each cycle
 server int gitd_wb_pattern = 1;
 server float gitd_wb_speed = 0.004;
 server bool gitd_wb_bleed = true;
@@ -100,15 +103,16 @@ server float gitd_wb_anim_phase = 0.5;
 
 // ---- Wall top (wt) -------------------------------------------------------
 server bool gitd_wt_enabled = true;
-server int gitd_wt_c1 = 12;
-server int gitd_wt_c2 = 11;
-server int gitd_wt_c3 = 8;
-server int gitd_wt_c4 = 13;
-server int gitd_wt_c5 = -1;
-server int gitd_wt_c6 = -1;
-server int gitd_wt_c7 = -1;
-server int gitd_wt_c8 = -1;
+server color gitd_wt_c1 = "8c 00 ff";
+server color gitd_wt_c2 = "3c 00 c8";
+server color gitd_wt_c3 = "00 dc ff";
+server color gitd_wt_c4 = "ff 00 c8";
+server color gitd_wt_c5 = "8c 00 ff";
+server color gitd_wt_c6 = "3c 00 c8";
+server color gitd_wt_c7 = "00 dc ff";
+server color gitd_wt_c8 = "ff 00 c8";
 server int gitd_wt_slots = 4;
+server bool gitd_wt_random = false;   // ignore the slots, pick fresh colours each cycle
 server int gitd_wt_pattern = 1;
 server float gitd_wt_speed = 0.004;
 server bool gitd_wt_bleed = true;
@@ -208,15 +212,16 @@ server float fl_density = 1.0;    // how much haze the beam lights up
 
 // Colour. Same idea as the glow lanes: up to eight slots, cycled with a
 // transition, or held on one. -1 in a slot means random.
-server int fl_c1 = 17;            // Halogen
-server int fl_c2 = 17;
-server int fl_c3 = 17;
-server int fl_c4 = 17;
-server int fl_c5 = 17;
-server int fl_c6 = 17;
-server int fl_c7 = 17;
-server int fl_c8 = 17;
-server int fl_slots = 1;          // 1 = a single steady colour
+server color fl_c1 = "ff f1 e0";            // Halogen
+server color fl_c2 = "ff f1 e0";
+server color fl_c3 = "ff f1 e0";
+server color fl_c4 = "ff f1 e0";
+server color fl_c5 = "ff f1 e0";
+server color fl_c6 = "ff f1 e0";
+server color fl_c7 = "ff f1 e0";
+server color fl_c8 = "ff f1 e0";
+server int fl_slots = 1;
+server bool fl_random = false;          // 1 = a single steady colour
 server int fl_pattern = 1;        // 0 snap, 1 fade, 2 flash, 3 breathe, 4 ping-pong
 server float fl_speed = 0.004;
 

@@ -14,11 +14,18 @@
 
 class GITD_Palette : Object
 {
-	// Slot values index this. -1 means "random", re-rolled every time that
-	// slot comes around.
+	static Color RandomColor()
+	{
+		return Color(255, random(0, 255), random(0, 255), random(0, 255));
+	}
+
+	// Kept for anything that still wants a named colour by index. Lane and
+	// flashlight slots no longer use this -- they hold real 32-bit colours
+	// chosen from a picker, because restricting a glow mod to 26 preset
+	// colours was never defensible.
 	static Color Get(int idx)
 	{
-		if (idx < 0) return Color(255, random(0, 255), random(0, 255), random(0, 255));
+		if (idx < 0) return RandomColor();
 		switch (idx)
 		{
 			case 0:  return Color(255,   0,   0,   0); // Black
@@ -113,9 +120,14 @@ class GITD_Lane : Object
 
 	Color SlotColor(int n)
 	{
+		// Randomise is a lane switch rather than a magic value in a slot: a
+		// colour picker has no way to express "surprise me", and hiding it in
+		// one of the 16.7 million pickable values would be a trap.
+		if (GetBool("_random")) return GITD_Palette.RandomColor();
+
 		int count = clamp(GetInt("_slots"), 1, 8);
 		int which = (n % count) + 1;   // cvars are 1-based: _c1 .. _c8
-		return GITD_Palette.Get(GetInt("_c" .. which));
+		return CVar.FindCVar(prefix .. "_c" .. which).GetInt();
 	}
 
 	// Advances this lane one tic and resolves its base colour and intensity.
@@ -804,6 +816,7 @@ class GITD_ResetHandler : EventHandler
 			CVar.FindCVar(p .. "_enabled").ResetToDefault();
 			for (int c = 1; c <= 8; c++) CVar.FindCVar(p .. "_c" .. c).ResetToDefault();
 			CVar.FindCVar(p .. "_slots").ResetToDefault();
+			CVar.FindCVar(p .. "_random").ResetToDefault();
 			CVar.FindCVar(p .. "_pattern").ResetToDefault();
 			CVar.FindCVar(p .. "_speed").ResetToDefault();
 			CVar.FindCVar(p .. "_bleed").ResetToDefault();

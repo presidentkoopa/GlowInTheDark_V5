@@ -44,9 +44,11 @@ class GITD_Flashlight : Thinker
 
 	Color SlotColor(int n)
 	{
+		if (CVar.FindCVar("fl_random").GetBool()) return GITD_Palette.RandomColor();
+
 		int count = clamp(CVar.FindCVar("fl_slots").GetInt(), 1, 8);
 		int which = (n % count) + 1;
-		return GITD_Palette.Get(CVar.FindCVar("fl_c" .. which).GetInt());
+		return CVar.FindCVar("fl_c" .. which).GetInt();
 	}
 
 	// One steady colour is the common case, so skip the whole transition
