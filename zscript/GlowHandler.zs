@@ -365,7 +365,15 @@ class GITD_Handler : StaticEventHandler
 {
 	GITD_Lane wb, wt, cg, fg;
 
-	TArray<int> overridden;
+	// Array, NOT TArray. TArray is the engine's C++ name for this
+	// container; ZScript spells it Array<T> (see player.zs:3338 and
+	// screenjob.zs:210 in the engine's own scripts).
+	//
+	// Worth knowing because the error does not say "unknown type": the
+	// parser reads TArray as an identifier, then hits '<' where it wanted
+	// a variable name, and reports "Unexpected '<', expecting identifier"
+	// -- which points at the syntax rather than at the wrong word.
+	Array<int> overridden;
 	Vector2 mapCentre;
 
 	// Sweep: where the band currently sits, and which way it is going.
